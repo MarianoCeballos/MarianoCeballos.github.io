@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="color-scheme" content="light">
+<title>Sprint Overview</title>
+<style>
+:root{
+  /* ENG-inspired palette (approximate): primary blue #0E55B9, dark navy #062F65, bright blue #176ACB,
+     cyan #35B4C8, light background #F5F7FB, white cards. Sprint states keep distinct hues. */
+  --bg:#f5f7fb; --card:#ffffff; --ink:#062f65; --ink2:#34506f; --muted:#566d8a; --line:#dde5f0; --line2:#ebf0f7;
+  --accent:#0e55b9; --accent-soft:#e7effb; --accent2:#35b4c8;
+  --c-pend:#b9c5d3; --c-dev:#5fb0ee; --c-val:#176acb; --c-aqa:#35b4c8; --c-done:#0b7a63;
+  --shadow:0 1px 2px rgba(6,47,101,.05),0 8px 26px rgba(6,47,101,.06);
+  --font:"Inter","SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased;border-top:4px solid transparent;border-image:linear-gradient(90deg,var(--accent),var(--accent2)) 1}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1280px;margin:0 auto;padding:22px 40px 36px}
+
+/* ---------- barra superior y encabezado ---------- */
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:650;letter-spacing:.01em;color:var(--ink2)}
+.logo{width:5px;height:20px;border-radius:3px;background:linear-gradient(180deg,var(--accent),var(--accent2))}
+.upd{font-size:12px;color:var(--muted)}
+.hero h1{margin:0;font-size:clamp(32px,3.6vw,46px);line-height:1.05;letter-spacing:-.035em;font-weight:700;color:var(--accent)}
+.meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;margin-top:6px;color:var(--ink2);font-size:14px}
+.meta .goal{color:var(--muted)}
+.hero{margin-bottom:22px}
+
+/* ---------- KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpi{all:unset;box-sizing:border-box;cursor:pointer;position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px 18px 14px 22px;transition:border-color .15s,transform .15s}
+.kpi::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:4px;border-radius:0 4px 4px 0;background:var(--k,var(--muted))}
+.kpi:hover{border-color:var(--k,var(--accent))}
+.kpi:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.kpi.on{border-color:var(--k,var(--accent));box-shadow:0 0 0 1px var(--k,var(--accent)),var(--shadow)}
+.kpi .l{font-size:12px;font-weight:650;color:var(--ink2)}
+.kpi .v{font-size:clamp(34px,3.4vw,46px);line-height:1.05;font-weight:680;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .s{font-size:11.5px;color:var(--muted);margin-top:1px}
+
+/* ---------- distribución ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.dist{margin-top:14px;padding:16px 20px 14px}
+.dist-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
+.sec{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+.hint{font-size:12px;color:var(--muted)}
+.stack{display:flex;gap:3px;height:44px}
+.seg{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:34px;border-radius:10px;font-weight:700;font-size:15px;color:#fff;font-variant-numeric:tabular-nums;transition:filter .15s,transform .15s,opacity .15s}
+.seg[data-g="pend"]{color:#26405c}
+.seg[data-g="dev"]{color:#06264d}
+.seg[data-g="aqa"]{color:#04283a}
+.seg:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.seg:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stack.has-sel .seg{opacity:.45}
+.stack.has-sel .seg.on{opacity:1}
+.legend{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:11px}
+.lg{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2)}
+.lg:hover{color:var(--ink)}
+.lg:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.lg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.lg b{font-weight:650;color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* ---------- iniciativas ---------- */
+.sec-head{display:flex;align-items:baseline;gap:12px;margin:28px 2px 12px}
+.inis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ini{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px 18px 15px;transition:border-color .15s,transform .15s}
+.ini:hover{border-color:var(--accent2);transform:translateY(-1px)}
+.ini:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ini.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow);background:var(--accent-soft)}
+.ini-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ini h3{margin:0;font-size:16px;line-height:1.25;letter-spacing:-.01em}
+.ini .n{flex:none;font-size:12px;font-weight:650;color:var(--ink2);background:var(--line2);border-radius:999px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.ini.on .n{background:var(--accent);color:#fff}
+.ini p{margin:0;font-size:12.5px;line-height:1.4;color:var(--ink2)}
+.mini{display:flex;gap:2px;height:10px;border-radius:5px;overflow:hidden;background:var(--line2)}
+.mini i{display:block;height:100%}
+.mini-n{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:11.5px;color:var(--muted)}
+.mini-n span{display:inline-flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums}
+.mini-n i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.nota{font-size:11.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;line-height:1.35}
+
+/* ---------- tabla de cards ---------- */
+details.cards{margin-top:28px;padding:0}
+details.cards > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px;padding:16px 20px}
+details.cards > summary::-webkit-details-marker{display:none}
+details.cards > summary .t{font-size:15px;font-weight:700;letter-spacing:-.01em}
+details.cards > summary .hint{margin-left:2px}
+details.cards > summary::after{content:"Explore ▾";margin-left:auto;font-size:12.5px;font-weight:650;color:var(--accent)}
+details.cards[open] > summary::after{content:"Hide ▴"}
+.cbody{padding:0 20px 18px;border-top:1px solid var(--line2)}
+.filters{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:14px 0 8px}
+.filters input[type=search],.filters select{font:inherit;font-size:13px;padding:7px 11px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-width:0}
+.filters input[type=search]{width:230px}
+.btn{font-size:12.5px;font-weight:650;padding:7px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:30px;padding-bottom:10px}
+.fchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 6px 3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);border:0;cursor:pointer}
+.fchip span{opacity:.7}
+.cnt{margin-left:auto;font-size:12.5px;color:var(--muted)}
+.twrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{position:sticky;top:0;z-index:1;background:var(--card);text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
+th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
+th button:hover{color:var(--ink)}
+th button:focus-visible{outline:2px solid var(--accent);border-radius:4px}
+td{padding:9px 14px;border-bottom:1px solid var(--line2);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--line2)}
+td.k{white-space:nowrap;font-weight:650;font-variant-numeric:tabular-nums}
+td.k a{color:var(--accent);text-decoration:none}
+td.k a:hover{text-decoration:underline}
+td.t{color:var(--ink);min-width:260px}
+td.e,td:last-child{white-space:nowrap}
+.st{display:inline-flex;align-items:center;gap:7px}
+.st i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.itag{font-size:11.5px;color:var(--ink2);background:var(--line2);border-radius:7px;padding:2px 8px;white-space:nowrap}
+tr.gh td{background:var(--line2);font-weight:700;font-size:12px;color:var(--ink2);padding:7px 14px;border-bottom:1px solid var(--line);position:sticky;top:34px}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+
+/* ---------- pie ---------- */
+.foot{margin-top:26px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 20px;color:var(--muted);font-size:11.5px}
+.banner{display:none;margin:0 0 14px;padding:10px 14px;border-radius:12px;background:#fdecec;color:#a02020;font-weight:600}
+.banner.show{display:block}
+
+/* ---------- responsive ---------- */
+@media (max-width:1060px){
+  .wrap{padding:18px 22px 30px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .inis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:700px){
+  .wrap{padding:16px 14px 28px}
+  .inis{grid-template-columns:1fr}
+  .filters input[type=search]{width:100%}
+  .cnt{margin-left:0;width:100%}
+  th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){display:none}
+  td.t{min-width:160px}
+  .seg{font-size:13px;min-width:26px}
+}
+@media print{ body{background:#fff} .card,.kpi,.ini{box-shadow:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<noscript><p class="banner show">This dashboard requires JavaScript.</p></noscript>
+<div id="banner" class="banner" role="alert"></div>
+
+<div class="bar">
+  <div class="brand"><span class="logo" aria-hidden="true"></span>Simplify · Sprint Overview</div>
+  <div class="upd" id="upd"></div>
+</div>
+
+<header class="hero">
+  <h1 id="titulo"></h1>
+  <div class="meta"><span id="periodo"></span><span class="goal" id="objetivo"></span></div>
+</header>
+
+<main>
+  <section class="kpis" id="kpis" aria-label="Key indicators"></section>
+
+  <section class="card dist" aria-label="Work distribution">
+    <div class="dist-top"><span class="sec">Work distribution</span><span class="hint">Click a segment to see its cards</span></div>
+    <div class="stack" id="stack"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <div class="sec-head"><span class="sec">Sprint initiatives</span><span class="hint">Click an initiative to see its cards</span></div>
+  <section class="inis" id="inis"></section>
+
+  <details class="card cards" id="cards">
+    <summary><span class="t">Sprint cards</span><span class="hint" id="cards-hint"></span></summary>
+    <div class="cbody">
+      <div class="filters" id="filters"></div>
+      <div class="chips" id="chips"></div>
+      <div class="twrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    </div>
+  </details>
+</main>
+
+<div class="foot" id="foot"></div>
+</div>
+
+<!-- DATA:BEGIN -->
+<script type="application/json" id="datos">
+{
+  "esquema": 3,
+  "sitio": "https://engworkers.atlassian.net/browse/",
+  "meta": {
+    "sprint": "Sprint 67",
+    "inicio": "2026-09-30",
+    "fin": "2026-10-13",
+    "actualizado": "2026-10-13T17:38:00-03:00",
+    "objetivo": "Consolidate the Discounts model and the closed-month rules, strengthen security, and fix open bugs in Billing, Work Orders and Expenses."
+  },
+  "esperado": { "activos": 59 },
+  "grupos": [
+    { "id": "pend", "nombre": "Pending", "estados": ["TO DO"] },
+    { "id": "dev", "nombre": "In development", "estados": ["In Progress", "Code Review"] },
+    { "id": "val", "nombre": "In validation", "estados": ["Ready in DEV", "Ready for QA"] },
+    { "id": "aqa", "nombre": "Approved in QA", "estados": ["Approved in QA"] },
+    { "id": "done", "nombre": "Completed", "estados": ["Done"] }
+  ],
+  "iniciativas": [
+    { "id": "disc", "nombre": "Discounts", "desc": "New discounts model: start month, task scope and manual amounts." },
+    { "id": "closed", "nombre": "Closed Months", "desc": "Blocks changes to months already closed by the Administrator." },
+    { "id": "sec", "nombre": "Security", "desc": "Stronger security for the application and its integrations.",
+      "nota": "NetSuite verification pending: a 7 Oct comment reports it on hold pending configuration (current status unconfirmed)." },
+    { "id": "billing", "nombre": "Billing & Work Orders", "desc": "Credit memos, change orders, work orders and vendors." },
+    { "id": "ux", "nombre": "Projects, Expenses & UX", "desc": "Simulated projects, expenses and interface improvements." },
+    { "id": "plat", "nombre": "Platform & Roles", "desc": "Role permissions, tooling and platform configuration." }
+  ],
+  "cards": [
+    {"k":"FINA-959","t":"FA - DTC - Conditional Discount: edit a condition modify conditions order","s":"TO DO","a":"Alí Hernández","i":"disc"},
+    {"k":"FINA-958","t":"FA - DTC - Adding a new service voids the conditions of the conditional discount","s":"TO DO","a":"Unassigned","i":"disc"},
+    {"k":"FINA-957","t":"FA - DTC - Percentage (UI) is not displayed when the discount applies to more than one task","s":"TO DO","a":"Mariano Ceballos","i":"disc"},
+    {"k":"FINA-954","t":"Design - Review the Discounts section without the Name field (incl. read-only state for non-owner BUs)","s":"TO DO","a":"Florencia Pastor","i":"disc"},
+    {"k":"FINA-951","t":"Discounts - Start Month defaults to the first month not closed by the Admin (and rename label from \"Start Date\")","s":"TO DO","a":"Mariano Ceballos","i":"disc"},
+    {"k":"FINA-949","t":"Tooling - Establish a deterministic spec-first agent workflow for financial.api and financial.ui","s":"In Progress","a":"Mariano Ceballos","i":"plat"},
+    {"k":"FINA-948","t":"Project Details - Month closed by Admin is shown in green instead of greyed out","s":"In Progress","a":"Alí Hernández","i":"closed"},
+    {"k":"FINA-946","t":"FA - DCT - Amount discount type can´t be created when the project has a closed month","s":"Code Review","a":"Mariano Ceballos","i":"disc"},
+    {"k":"FINA-945","t":"Discounts - Allow changing a task-level discount to project-level (free edits while no month is closed)","s":"Ready for QA","a":"marcos.teixeira","i":"disc"},
+    {"k":"FINA-944","t":"FA - DCT - Deleting a previously edited type discount displays the previous discount applied","s":"Code Review","a":"Mariano Ceballos","i":"disc"},
+    {"k":"FINA-943","t":"FA - DCT - Conditional discount: Applying a discount for future tasks prevents saving the changes","s":"Approved in QA","a":"Damian Soria","i":"disc"},
+    {"k":"FINA-942","t":"FA - DCT - Conditional discount: add a condition without the user creating it","s":"Ready in DEV","a":"Damian Soria","i":"disc"},
+    {"k":"FINA-941","t":"Roles - Redefine QA: remove Close month and closed-month bypass","s":"TO DO","a":"Nicolas Santostefano","i":"plat"},
+    {"k":"FINA-940","t":"Roles - Create Support role (current QA permissions, no Profit Sharing)","s":"TO DO","a":"Nicolas Santostefano","i":"plat"},
+    {"k":"FINA-939","t":"Roles - Refactor permissions into a base + cascading model (each role builds on the previous one)","s":"In Progress","a":"Nicolas Santostefano","i":"plat"},
+    {"k":"FINA-937","t":"FA - The tag editing pop-up does not allow the Save/Close buttons to be seen when multiple tags are assigned","s":"Code Review","a":"Ema Ceballos","i":"ux"},
+    {"k":"FINA-935","t":"Update Link to User Guide","s":"Approved in QA","a":"Damian Soria","i":"plat"},
+    {"k":"FINA-934","t":"Project Details - Hide Discount/Subtotal rows when no discount exists","s":"Approved in QA","a":"Damian Soria","i":"disc"},
+    {"k":"FINA-933","t":"Fix failing tests in projectDetail.test.tsx introduced by FINA-927 merge","s":"Done","a":"Mariano Ceballos","i":"plat"},
+    {"k":"FINA-931","t":"Overview > Outsourced - Add sorting by month","s":"Code Review","a":"Nicolas Santostefano","i":"ux"},
+    {"k":"FINA-927","t":"FA - DCT - Creating a discount for an open month, it does not allow editing or delete it","s":"Approved in QA","a":"Damian Soria","i":"disc"},
+    {"k":"FINA-926","t":"Project Details - Progress loading should block the specific closed month per BU, not everything before it","s":"Ready in DEV","a":"Alí Hernández","i":"closed"},
+    {"k":"FINA-925","t":"Fix BU Code for Alarmageddon: ARM → ALM","s":"Done","a":"Leila Gattas","i":"plat"},
+    {"k":"FINA-922","t":"FA - Closed Month tooltips are not showing in Project Detail for closed months","s":"Approved in QA","a":"Alí Hernández","i":"closed"},
+    {"k":"FINA-920","t":"Shared Management - Allow deleting a WO (blocked when progress exists)","s":"Approved in QA","a":"Nicolas Santostefano","i":"closed"},
+    {"k":"FINA-917","t":"Link Work Orders to Vendor App by SimplifyId instead of name","s":"Approved in QA","a":"Leila Gattas","i":"billing"},
+    {"k":"FINA-916","t":"FA - WO - Close Month/Progress: the tooltip date shows the date of the last closed month for all months","s":"Approved in QA","a":"Alí Hernández","i":"closed"},
+    {"k":"FINA-915","t":"Legacy Change Orders blocked by approval-flow change are not editable/approvable","s":"Code Review","a":"Alí Hernández","i":"billing"},
+    {"k":"FINA-911","t":"FA - PDF files with uppercase extensions cause an error when approving a CO","s":"Approved in QA","a":"Alí Hernández","i":"billing"},
+    {"k":"FINA-910","t":"Simulated Projects - Simulated Total should exclude hidden projects (Director/PM view)","s":"Approved in QA","a":"Nicolas Santostefano","i":"ux"},
+    {"k":"FINA-909","t":"Security - Sanitize user-entered text to prevent stored XSS (Tag labels and similar free-text fields)","s":"Approved in QA","a":"Ema Ceballos","i":"sec"},
+    {"k":"FINA-908","t":"Security - Verify sender authenticity on NetSuite webhook endpoints (billing details, services, projects)","s":"TO DO","a":"Ema Ceballos","i":"sec"},
+    {"k":"FINA-907","t":"Security - Require authentication on unauthenticated email endpoint","s":"Done","a":"Ema Ceballos","i":"sec"},
+    {"k":"FINA-903","t":"Design - Discounts: closed-month UX for BUD/PM (locked) vs Admin (bypass/editable)","s":"Done","a":"Florencia Pastor","i":"disc"},
+    {"k":"FINA-902","t":"Discounts - Closed-month UX: lock for BUD/PM, bypass for Admin","s":"In Progress","a":"Alí Hernández","i":"disc"},
+    {"k":"FINA-901","t":"FA - WO - The vendor name is not displayed in Month Detail > Vendor tab","s":"TO DO","a":"Ema Ceballos","i":"billing"},
+    {"k":"FINA-899","t":"CM - Add unit column to Credit Memo tooltip and expand hover to Progress","s":"Approved in QA","a":"Mariano Ceballos","i":"billing"},
+    {"k":"FINA-898","t":"Mass Project Sync - Add endpoint to trigger mass NetSuite synchronization for all projects (to pick up Credit Memos)","s":"Approved in QA","a":"Martín Javier Vidal","i":"billing"},
+    {"k":"FINA-890","t":"CO approval email - Description field shows URL-encoded characters instead of spaces (%20)","s":"Approved in QA","a":"Alí Hernández","i":"billing"},
+    {"k":"FINA-884","t":"WO - CSV export adjustments (Approval column, Department rename, Vendor email)","s":"Approved in QA","a":"Nicolas Santostefano","i":"billing"},
+    {"k":"FINA-880","t":"Discounts - \"Include Future Tasks\" checkmark","s":"Ready for QA","a":"Damian Soria","i":"disc"},
+    {"k":"FINA-877","t":"Expenses screen — BU filter dropdown has no \"Clear filter\" and misleadingly shows a BU as selected while actually displaying totals for all BUs","s":"Approved in QA","a":"Ema Ceballos","i":"ux"},
+    {"k":"FINA-876","t":"Filter Vendor / Vendor Staff data by IsActive (Deel & NetSuite centralization)","s":"Approved in QA","a":"Leila Gattas","i":"billing"},
+    {"k":"FINA-875","t":"WO - Set WO default Multiplier value to 1.4","s":"Approved in QA","a":"Nicolas Santostefano","i":"billing"},
+    {"k":"FINA-869","t":"Progress - Support and display negative progress values in Billing and all screens where it replicates","s":"Ready in DEV","a":"Mariano Ceballos","i":"billing"},
+    {"k":"FINA-863","t":"Discounts - Define migration behavior for pre-existing discounts (Tasks scope, Start Month, closed-month lock)","s":"Approved in QA","a":"marcos.teixeira","i":"disc"},
+    {"k":"FINA-857","t":"FA - Project Detail & Forecast pop-up services names brakes layout","s":"Approved in QA","a":"Mariano Ceballos","i":"ux"},
+    {"k":"FINA-850","t":"Simulated Projects - Slow data loading, plus misleading \"values will be lost\" warning on unsaved edits","s":"Approved in QA","a":"Damian Soria","i":"ux"},
+    {"k":"FINA-834","t":"New BU (Alarmageddon) - Assign Chris Shacklock as BUD + review related role/access changes","s":"Done","a":"Lisandro Fideleff","i":"plat"},
+    {"k":"FINA-828","t":"Import Projects - Project names containing \"&\" don't match correctly (same encoding bug as FINA-822)","s":"Approved in QA","a":"Mariano Ceballos","i":"ux"},
+    {"k":"FINA-796","t":"Discounts - Amount type: manual per-month value via Subtotal-row pencil icon","s":"Ready for QA","a":"Damian Soria","i":"disc"},
+    {"k":"FINA-786","t":"Closures - Define exception/override path for closed-month corrections","s":"TO DO","a":"Alí Hernández","i":"closed"},
+    {"k":"FINA-783","t":"Shared Management - block progress loading in Admin-closed months","s":"Approved in QA","a":"Nicolas Santostefano","i":"closed"},
+    {"k":"FINA-782","t":"WO Fee edit blocked when progress exists in an Admin-closed month","s":"Ready in DEV","a":"Alí Hernández","i":"closed"},
+    {"k":"FINA-757","t":"WO Lump Sum - Fee becomes read-only, calculated as the sum of linked services' fees","s":"Approved in QA","a":"Mariano Ceballos","i":"billing"},
+    {"k":"FINA-748","t":"Discounts - Task/Service selection scope (applies to Fixed and Conditional)","s":"Ready for QA","a":"Damian Soria","i":"disc"},
+    {"k":"FINA-703","t":"Overview - Reduce blue opacity on Quarterly Budget summary rows","s":"Ready in DEV","a":"Alí Hernández","i":"ux"},
+    {"k":"FINA-595","t":"Discounts - Support Start Month (historical values preserved)","s":"Ready for QA","a":"Damian Soria","i":"disc"},
+    {"k":"FINA-576","t":"Closed BU/Month should block Work Order progress loading","s":"Approved in QA","a":"Mariano Ceballos","i":"closed"}
+  ]
+}
+</script>
+<!-- DATA:END -->
+
+<script>
+(function(){
+'use strict';
+var $ = function(s){ return document.querySelector(s); };
+function h(tag, props){
+  var e = document.createElement(tag);
+  if (props) Object.keys(props).forEach(function(k){
+    var v = props[k]; if (v == null || v === false) return;
+    if (k === 'class') e.className = v; else if (k === 'text') e.textContent = String(v);
+    else e.setAttribute(k, v === true ? '' : String(v));
+  });
+  for (var i = 2; i < arguments.length; i++){
+    var kids = Array.isArray(arguments[i]) ? arguments[i] : [arguments[i]];
+    kids.forEach(function(k){ if (k == null || k === false) return; e.appendChild(k && k.nodeType ? k : document.createTextNode(String(k))); });
+  }
+  return e;
+}
+function clear(e){ while (e.firstChild) e.removeChild(e.firstChild); }
+
+var D;
+try { D = JSON.parse($('#datos').textContent); }
+catch (err){ var b0 = $('#banner'); b0.textContent = 'The data could not be read (invalid JSON).'; b0.classList.add('show'); return; }
+
+/* ---------- datos derivados ---------- */
+var KEY_RE = /^FINA-\d{1,6}$/;
+var SITE = String(D.sitio || '');
+var SITE_OK = /^https:\/\/[a-z0-9.-]+\.atlassian\.net\/browse\/$/.test(SITE);
+function url(k){ return (SITE_OK && KEY_RE.test(k)) ? SITE + k : null; }
+
+var GROUPS = D.grupos, INIS = D.iniciativas, cards = D.cards;
+var COL = { pend:'var(--c-pend)', dev:'var(--c-dev)', val:'var(--c-val)', aqa:'var(--c-aqa)', done:'var(--c-done)' };
+var GNAME = {}, GORDER = {}, S2G = {}, S_ALL = [];
+GROUPS.forEach(function(g, i){ GNAME[g.id] = g.nombre; GORDER[g.id] = i; g.estados.forEach(function(s){ S2G[s] = g.id; S_ALL.push(s); }); });
+var INAME = {}; INIS.forEach(function(i){ INAME[i.id] = i.nombre; });
+cards.forEach(function(c){ c.g = S2G[c.s] || '?'; });
+var ABIERTOS = ['pend', 'dev', 'val'];
+
+function countBy(list){ var o = {}; GROUPS.forEach(function(g){ o[g.id] = 0; }); list.forEach(function(c){ if (o[c.g] != null) o[c.g]++; }); return o; }
+var N = cards.length, G = countBy(cards);
+var abiertos = G.pend + G.dev + G.val;
+
+/* ---------- verificaciones internas ---------- */
+(function check(){
+  var errs = [], seen = {};
+  cards.forEach(function(c){
+    if (seen[c.k]) errs.push('duplicate key ' + c.k); seen[c.k] = 1;
+    if (!KEY_RE.test(c.k)) errs.push('invalid key ' + c.k);
+    if (c.g === '?') errs.push('unknown status in ' + c.k);
+    if (!INAME[c.i]) errs.push('unknown initiative in ' + c.k);
+  });
+  var sum = 0; INIS.forEach(function(i){ sum += cards.filter(function(c){ return c.i === i.id; }).length; });
+  if (sum !== N) errs.push('initiatives add up to ' + sum + ' but there are ' + N + ' cards');
+  var sg = 0; GROUPS.forEach(function(g){ sg += G[g.id]; });
+  if (sg !== N) errs.push('stages add up to ' + sg + ' but there are ' + N + ' cards');
+  if (D.esperado && D.esperado.activos !== N) errs.push('expected ' + D.esperado.activos + ' active work items but found ' + N);
+  if (!SITE_OK) errs.push('link site not verified');
+  if (errs.length){ var b = $('#banner'); b.textContent = 'Inconsistent data: ' + errs.join('; ') + '. Do not share until fixed.'; b.classList.add('show'); }
+})();
+
+/* ---------- encabezado ---------- */
+var fDia = new Intl.DateTimeFormat('en-GB', { day:'numeric', month:'short', timeZone:'UTC' });
+var fDiaA = new Intl.DateTimeFormat('en-GB', { day:'numeric', month:'short', year:'numeric', timeZone:'UTC' });
+var fAct = new Intl.DateTimeFormat('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:false, timeZone:(D.meta.zona || 'America/Argentina/Buenos_Aires') });
+var tA = new Date(D.meta.actualizado);
+document.title = D.meta.sprint + ' · Sprint Overview';
+$('#titulo').textContent = D.meta.sprint;
+$('#periodo').textContent = fDia.format(new Date(D.meta.inicio + 'T00:00:00Z')) + ' – ' + fDiaA.format(new Date(D.meta.fin + 'T00:00:00Z'));
+$('#objetivo').textContent = D.meta.objetivo;
+$('#upd').textContent = 'Updated ' + fAct.format(tA);
+$('#foot').appendChild(h('span', { text:'Main work items only; excludes sub-tasks and discarded items. “Approved in QA” does not mean released to production.' }));
+$('#foot').appendChild(h('span', { text:'Jira data as of ' + fAct.format(tA) + '; not updated automatically.' }));
+
+/* ---------- estado de filtros ---------- */
+var F = { q:'', ini:'', estado:'', resp:'', agrupar:'', orden:{ col:'estado', dir:1 } };
+var els = {};
+function estadoLabel(v){
+  if (!v) return '';
+  if (v === 'g:abiertos') return 'In progress or pending';
+  if (v.indexOf('g:') === 0) return GNAME[v.slice(2)];
+  return v.slice(2);
+}
+function setF(patch, abrir){
+  Object.keys(patch).forEach(function(k){ F[k] = patch[k]; });
+  syncControls(); renderAll();
+  if (abrir){
+    var d = $('#cards'); var estabaCerrado = !d.open; d.open = true;
+    if (estabaCerrado) d.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+}
+function toggle(key, val){ var p = {}; p[key] = (F[key] === val) ? '' : val; setF(p, true); }
+
+/* ---------- KPIs ---------- */
+function renderKpis(){
+  var host = $('#kpis'); clear(host);
+  var kp = [
+    { l:'Active work items', v:N, s:'Main items in the sprint', c:'var(--accent)', f:{ estado:'' }, on: F.estado === '' && !F.ini && !F.q && !F.resp },
+    { l:'Completed', v:G.done, s:'Status: Done', c:COL.done, f:{ estado:'g:done' }, on: F.estado === 'g:done' },
+    { l:'Approved in QA', v:G.aqa, s:'Not the same as released', c:COL.aqa, f:{ estado:'g:aqa' }, on: F.estado === 'g:aqa' },
+    { l:'In progress or pending', v:abiertos, s:'Not yet approved in QA', c:COL.val, f:{ estado:'g:abiertos' }, on: F.estado === 'g:abiertos' }
+  ];
+  kp.forEach(function(k, idx){
+    var b = h('button', { class:'kpi' + (k.on && idx ? ' on' : ''), type:'button', style:'--k:' + k.c, 'aria-pressed': (k.on && idx) ? 'true' : 'false', title:'View cards' },
+      h('div', { class:'l', text:k.l }), h('div', { class:'v', text:k.v }), h('div', { class:'s', text:k.s }));
+    b.addEventListener('click', function(){
+      if (idx === 0) setF({ estado:'', ini:'', q:'', resp:'' }, true);
+      else toggle('estado', k.f.estado);
+    });
+    host.appendChild(b);
+  });
+}
+
+/* ---------- distribución ---------- */
+function renderDist(){
+  var st = $('#stack'), lg = $('#legend'); clear(st); clear(lg);
+  var sel = F.estado.indexOf('g:') === 0 && F.estado !== 'g:abiertos' ? F.estado.slice(2) : '';
+  st.className = 'stack' + (sel ? ' has-sel' : '');
+  GROUPS.forEach(function(g){
+    var n = G[g.id]; if (!n) return;
+    var b = h('button', { class:'seg' + (sel === g.id ? ' on' : ''), type:'button', 'data-g':g.id, style:'flex:' + n + ' 1 0;background:' + COL[g.id], title:g.nombre + ': ' + n + ' (' + g.estados.join(' + ') + ')', 'aria-label':g.nombre + ': ' + n }, String(n));
+    b.addEventListener('click', function(){ toggle('estado', 'g:' + g.id); });
+    st.appendChild(b);
+    var l = h('button', { class:'lg', type:'button', title:g.estados.join(' + ') }, h('i', { style:'background:' + COL[g.id] }), g.nombre + ' ', h('b', { text:n }));
+    l.addEventListener('click', function(){ toggle('estado', 'g:' + g.id); });
+    lg.appendChild(l);
+  });
+}
+
+/* ---------- iniciativas ---------- */
+function renderInis(){
+  var host = $('#inis'); clear(host);
+  INIS.forEach(function(ini){
+    var list = cards.filter(function(c){ return c.i === ini.id; });
+    var cn = countBy(list);
+    var bar = h('div', { class:'mini' });
+    var nums = h('div', { class:'mini-n' });
+    GROUPS.forEach(function(g){
+      if (!cn[g.id]) return;
+      bar.appendChild(h('i', { style:'flex:' + cn[g.id] + ' 1 0;background:' + COL[g.id] }));
+      nums.appendChild(h('span', { title:g.nombre }, h('i', { style:'background:' + COL[g.id] }), cn[g.id] + ' ' + g.nombre.toLowerCase().replace('qa', 'QA')));
+    });
+    var on = F.ini === ini.id;
+    var b = h('button', { class:'ini' + (on ? ' on' : ''), type:'button', 'aria-pressed': on ? 'true' : 'false', title:'View cards in ' + ini.nombre },
+      h('div', { class:'ini-top' }, h('h3', { text:ini.nombre }), h('span', { class:'n', text:list.length + ' cards' })),
+      h('p', { text:ini.desc }), bar, nums,
+      ini.nota ? h('div', { class:'nota', text:ini.nota }) : null);
+    b.addEventListener('click', function(){ toggle('ini', ini.id); });
+    host.appendChild(b);
+  });
+}
+
+/* ---------- filtros y tabla ---------- */
+function uniq(a){ return a.filter(function(v, i){ return a.indexOf(v) === i; }); }
+(function buildFilters(){
+  var host = $('#filters');
+  els.q = h('input', { type:'search', placeholder:'Search by key or name…', 'aria-label':'Search' });
+  els.ini = h('select', { 'aria-label':'Initiative' }, h('option', { value:'', text:'All initiatives' }));
+  INIS.forEach(function(i){ els.ini.appendChild(h('option', { value:i.id, text:i.nombre })); });
+  els.estado = h('select', { 'aria-label':'Status' }, h('option', { value:'', text:'All statuses' }));
+  var og1 = h('optgroup', { label:'By stage' });
+  GROUPS.forEach(function(g){ og1.appendChild(h('option', { value:'g:' + g.id, text:g.nombre })); });
+  og1.appendChild(h('option', { value:'g:abiertos', text:'In progress or pending' }));
+  var og2 = h('optgroup', { label:'Jira status' });
+  S_ALL.forEach(function(s){ og2.appendChild(h('option', { value:'s:' + s, text:s })); });
+  els.estado.appendChild(og1); els.estado.appendChild(og2);
+  var resps = {}; cards.forEach(function(c){ resps[c.a] = (resps[c.a] || 0) + 1; });
+  els.resp = h('select', { 'aria-label':'Owner' }, h('option', { value:'', text:'All owners' }));
+  Object.keys(resps).sort(function(a, b){ return resps[b] - resps[a] || a.localeCompare(b); }).forEach(function(r){ els.resp.appendChild(h('option', { value:r, text:r + ' (' + resps[r] + ')' })); });
+  els.agrupar = h('select', { 'aria-label':'Group by' },
+    h('option', { value:'', text:'No grouping' }), h('option', { value:'ini', text:'Group by initiative' }), h('option', { value:'est', text:'Group by stage' }));
+  els.cnt = h('span', { class:'cnt' });
+  var reset = h('button', { class:'btn', type:'button', text:'Clear filters' });
+  [els.q, els.ini, els.estado, els.resp, els.agrupar, reset, els.cnt].forEach(function(e){ host.appendChild(e); });
+  function read(){ F.q = els.q.value.trim(); F.ini = els.ini.value; F.estado = els.estado.value; F.resp = els.resp.value; F.agrupar = els.agrupar.value; renderAll(); }
+  ['input', 'change'].forEach(function(ev){ [els.q, els.ini, els.estado, els.resp, els.agrupar].forEach(function(e){ e.addEventListener(ev, read); }); });
+  reset.addEventListener('click', function(){ setF({ q:'', ini:'', estado:'', resp:'' }, false); });
+})();
+function syncControls(){ els.q.value = F.q; els.ini.value = F.ini; els.estado.value = F.estado; els.resp.value = F.resp; els.agrupar.value = F.agrupar; }
+
+function matches(c){
+  if (F.ini && c.i !== F.ini) return false;
+  if (F.estado){
+    if (F.estado === 'g:abiertos'){ if (ABIERTOS.indexOf(c.g) < 0) return false; }
+    else if (F.estado.indexOf('g:') === 0){ if (c.g !== F.estado.slice(2)) return false; }
+    else if (c.s !== F.estado.slice(2)) return false;
+  }
+  if (F.resp && c.a !== F.resp) return false;
+  if (F.q){
+    var q = F.q.toLowerCase();
+    if ((c.k + ' ' + c.t).toLowerCase().indexOf(q) < 0 && c.k.slice(5).indexOf(q.replace(/^fina-?/, '')) !== 0) return false;
+  }
+  return true;
+}
+function keyNum(c){ return parseInt(c.k.slice(5), 10); }
+var IORDER = {}; INIS.forEach(function(i, n){ IORDER[i.id] = n; });
+function cmp(a, b){
+  if (F.agrupar === 'ini' && a.i !== b.i) return IORDER[a.i] - IORDER[b.i];
+  if (F.agrupar === 'est' && a.g !== b.g) return GORDER[a.g] - GORDER[b.g];
+  var o = F.orden, r = 0;
+  if (o.col === 'key') r = keyNum(a) - keyNum(b);
+  else if (o.col === 'nombre') r = a.t.localeCompare(b.t);
+  else if (o.col === 'resp') r = a.a.localeCompare(b.a);
+  else if (o.col === 'ini') r = INAME[a.i].localeCompare(INAME[b.i]);
+  else r = (GORDER[a.g] - GORDER[b.g]) || (S_ALL.indexOf(a.s) - S_ALL.indexOf(b.s));
+  return (r || (keyNum(b) - keyNum(a))) * (r ? o.dir : 1);
+}
+function renderChips(){
+  var host = $('#chips'); clear(host);
+  function chip(label, key){
+    var b = h('button', { class:'fchip', type:'button', title:'Remove this filter' }, label, h('span', { text:'✕' }));
+    b.addEventListener('click', function(){ var p = {}; p[key] = ''; setF(p, false); });
+    host.appendChild(b);
+  }
+  if (F.ini) chip(INAME[F.ini], 'ini');
+  if (F.estado) chip(estadoLabel(F.estado), 'estado');
+  if (F.resp) chip(F.resp, 'resp');
+  if (F.q) chip('«' + F.q + '»', 'q');
+  if (!host.firstChild) host.appendChild(h('span', { class:'hint', text:'No active filters. Combine initiative, status and owner.' }));
+}
+function renderHead(){
+  var th = $('#thead'); clear(th);
+  var cols = [['key', 'Key'], ['nombre', 'Name'], ['ini', 'Initiative'], ['estado', 'Status'], ['resp', 'Owner']];
+  var tr = h('tr');
+  cols.forEach(function(c){
+    var on = F.orden.col === c[0];
+    var b = h('button', { type:'button', title:'Sort by ' + c[1].toLowerCase() }, c[1], on ? (F.orden.dir > 0 ? ' ▲' : ' ▼') : '');
+    b.addEventListener('click', function(){ setF({ orden: { col:c[0], dir: on ? -F.orden.dir : 1 } }, false); });
+    tr.appendChild(h('th', { 'aria-sort': on ? (F.orden.dir > 0 ? 'ascending' : 'descending') : 'none' }, b));
+  });
+  th.appendChild(tr);
+}
+function renderTable(){
+  var body = $('#tbody'); clear(body);
+  var rows = cards.filter(matches).sort(cmp);
+  var lastG = null;
+  rows.forEach(function(c){
+    if (F.agrupar){
+      var gk = F.agrupar === 'ini' ? c.i : c.g;
+      if (gk !== lastG){
+        lastG = gk;
+        var n = rows.filter(function(r){ return (F.agrupar === 'ini' ? r.i : r.g) === gk; }).length;
+        body.appendChild(h('tr', { class:'gh' }, h('td', { colspan:5, text:(F.agrupar === 'ini' ? INAME[gk] : GNAME[gk]) + ' · ' + n })));
+      }
+    }
+    var u = url(c.k);
+    body.appendChild(h('tr', null,
+      h('td', { class:'k' }, u ? h('a', { href:u, target:'_blank', rel:'noopener noreferrer', title:'Open in Jira', text:c.k + ' ↗' }) : c.k),
+      h('td', { class:'t', text:c.t, title:c.t }),
+      h('td', null, h('span', { class:'itag', text:INAME[c.i] })),
+      h('td', { class:'e' }, h('span', { class:'st' }, h('i', { style:'background:' + COL[c.g] }), c.s)),
+      h('td', { text:c.a })
+    ));
+  });
+  if (!rows.length) body.appendChild(h('tr', null, h('td', { colspan:5, class:'empty', text:'No cards match the filters.' })));
+  els.cnt.textContent = 'Showing ' + rows.length + ' of ' + N;
+  $('#cards-hint').textContent = N + ' work items · search, filter and open each one in Jira';
+}
+function renderAll(){ renderKpis(); renderDist(); renderInis(); renderChips(); renderHead(); renderTable(); }
+
+syncControls();
+renderAll();
+if (location.hash === '#cards') $('#cards').open = true;   // enlace directo al listado
+})();
+</script>
+</body>
+</html>
